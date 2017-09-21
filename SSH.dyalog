@@ -246,8 +246,12 @@
         ⍝ Return the last error, as a string.
         ∇(num msg)←LastError;msgp;msgl
             :Access Public
-            num msgp msgl←C.libssh2_session_last_error session 0 0 0
-            msg←#.CInterop.ReadCStr msgp
+            num msgp msgl←C.libssh2_session_last_error session 0 0 0 
+            :If msgp=0
+                msg←''
+            :Else 
+                msg←#.CInterop.ReadCStr msgp
+            :EndIf
         ∇
 
         ⍝ See if this session is authenticated. Returns a boolean.
@@ -916,3 +920,5 @@
     :EndNamespace
 
 :EndNamespace
+⍝)(!Init!marinus!2017 9 21 15 51 17 0!0
+⍝)(!ScriptPath!marinus!2017 9 21 15 51 17 0!0
