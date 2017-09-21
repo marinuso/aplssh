@@ -77,6 +77,7 @@
 
         ∇r←Ref
             :Access Public
+            ⎕SIGNAL(session=0)/⊂('EN' 11)('Message' 'Session is broken.') 
             r←session
         ∇
 
@@ -88,9 +89,9 @@
 
         ∇Disconnect args;reas;desc;lang;localsess
             :Access Public
-            →(session=0)/0
+            →(Ref=0)/0
             reas desc lang←(S.SSH_DISCONNECT_BY_APPLICATION '' '')defaults args
-            localsess←session
+            localsess←Ref
             session←0
             {}C.libssh2_session_disconnect_ex localsess reas desc lang
             {}C.libssh2_session_free localsess
@@ -145,7 +146,7 @@
         ⍝ Handshake. 'sock' should be a socket object
         ∇Handshake sock;r
             :Access Public
-            r←C.libssh2_session_handshake session sock.FD
+            r←C.libssh2_session_handshake Ref sock.FD
             ⎕SIGNAL(r≠0)/⊂('EN'S.SSH_ERR)('Message' EMSG)
             socket←sock
         ∇
@@ -153,7 +154,7 @@
         ⍝ Get the current host key
         ∇(key type)←Hostkey;len;p;blk
             :Access Public
-            p len type←C.libssh2_session_hostkey session 0 0
+            p len type←C.libssh2_session_hostkey Ref 0 0
             ⎕SIGNAL(p=0)/⊂('EN'S.SSH_ERR)('Message' EMSG)
             ⍝ I'm assuming "len" is given for a reason, so let's make sure not to read past it
             blk←⎕NEW #.CInterop.DataBlock (len/0)
@@ -202,7 +203,7 @@
         ∇list←UserauthList username;ptr;str
             :Access Public
 
-            ptr←C.libssh2_userauth_list session username (≢username)
+            ptr←C.libssh2_userauth_list Ref username (≢username)
 
             :If ptr=0
                 ⍝ did the "authentication" succeed?
@@ -223,7 +224,7 @@
         ⍝Try to authenticate by password
         ∇Userauth_Password (name password);r
             :Access Public
-            r←C.libssh2_userauth_password_ex session name (≢name) password (≢password) 0
+            r←C.libssh2_userauth_password_ex Ref name (≢name) password (≢password) 0
             ⎕SIGNAL (r≠0)/⊂('EN'S.SSH_ERR)('Message' EMSG)
         ∇
 
@@ -239,14 +240,14 @@
                 pkptr←pkblk.Ref
             :EndIf
 
-            r←C.libssh2_userauth_publickey_fromfile_ex session name (≢name) pkptr privkey pass
+            r←C.libssh2_userauth_publickey_fromfile_ex Ref name (≢name) pkptr privkey pass
             ⎕SIGNAL (r≠0)/⊂('EN'S.SSH_ERR)('Message' EMSG)
         ∇              
 
         ⍝ Return the last error, as a string.
         ∇(num msg)←LastError;msgp;msgl
-            :Access Public
-            num msgp msgl←C.libssh2_session_last_error session 0 0 0 
+            :Access Public 
+            num msgp msgl←C.libssh2_session_last_error Ref 0 0 0 
             :If msgp=0
                 msg←''
             :Else 
@@ -257,17 +258,17 @@
         ⍝ See if this session is authenticated. Returns a boolean.
         ∇r←Authenticated
             :Access Public
-            r←C.libssh2_userauth_authenticated session
+            r←C.libssh2_userauth_authenticated Ref
         ∇
 
         ∇r←GetBlocking
             :Access Public
-            r←C.libssh2_session_get_blocking session
+            r←C.libssh2_session_get_blocking Ref
         ∇
 
         ∇SetBlocking b
             :Access Public
-            {}C.libssh2_session_set_blocking session b
+            {}C.libssh2_session_set_blocking Ref b
         ∇
 
         ⍝ Make a new session channel
@@ -920,5 +921,5 @@
     :EndNamespace
 
 :EndNamespace
-⍝)(!Init!marinus!2017 9 21 15 51 17 0!0
-⍝)(!ScriptPath!marinus!2017 9 21 15 51 17 0!0
+⍝)(!Init!marinus!2017 9 21 16 29 55 0!0
+⍝)(!ScriptPath!marinus!2017 9 21 16 29 55 0!0
