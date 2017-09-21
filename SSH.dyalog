@@ -109,7 +109,9 @@
             ⍝ make a session
             ⍝ we don't do callbacks into APL, because APL doesn't do callbacks into APL...
             session←C.libssh2_session_init_ex 0 0 0 0
-            ⎕SIGNAL(session=0)/⊂('EN'S.SSH_ERR)('Message' EMSG)
+            :If session=0             
+                ⎕SIGNAL⊂('EN'S.SSH_ERR)('Message' 'Cannot initialize session.')
+            :EndIf 
         ∇
 
         ⍝ Initialize the session
@@ -921,5 +923,5 @@
     :EndNamespace
 
 :EndNamespace
-⍝)(!Init!marinus!2017 9 21 16 29 55 0!0
-⍝)(!ScriptPath!marinus!2017 9 21 16 29 55 0!0
+⍝)(!Init!marinus!2017 9 21 16 49 57 0!0
+⍝)(!ScriptPath!marinus!2017 9 21 16 49 57 0!0
